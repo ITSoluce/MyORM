@@ -1,2 +1,5 @@
 /composer.phar
 /vendor/
+/DAL/
+/MyConfig/MyException.Config.php
+/MyConfig/MySQL.Config.php

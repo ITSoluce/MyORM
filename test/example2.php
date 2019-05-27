@@ -49,7 +49,7 @@ echo $reference2->save(); // will echo the inserted ID
 
 echo "
 
-$"."customer = new MyORM\\customer();
+$"."customer = new MyORM\\mycustomer(); // specific custom class herit from DAL class
 $"."customer->FirstName=\"PLATEL\";
 $"."customer->LastName=\"Renaud\";
 // not saved cause will be save with order
