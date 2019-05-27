@@ -1,0 +1,23 @@
+{
+    "name": "itsoluce/my-orm",
+    "description": "My tiny ORM class",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Renaud PLATEL",
+            "email": "renaud.platel@itsoluce.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=7.0.0",
+        "itsoluce/my-sql": "dev-master",
+        "itsoluce/my-exception": "dev-master",
+        "phpmailer/phpmailer": "dev-master"
+    },
+    "autoload": {
+        "psr-0": {
+            "MyORM": "src/"
+        }
+    }
+}
