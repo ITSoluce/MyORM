@@ -109,8 +109,7 @@ class Common
 			$query = "DELETE FROM `".$database."`.`".$class."` WHERE ".$Key." = ".$KeyValue;
 		}
 		
-                global $debug;
-                if ($debug)
+                if (MySQLDebug)
                     echo $query."<br>";
 		return $query;
 	}
