@@ -150,7 +150,7 @@ class $class extends Common
                                     {
                                             $PK = $row->Field;
                                             $c.= "
-    private $$col; // PRI
+    protected $$col; // PRI
     const primary_key = '$col'; // PRI";
                                             if ($type!="int")
                                             $keychar =1;
@@ -160,7 +160,7 @@ class $class extends Common
                                     else
                                     {
                                             $c.= "
-    private $$col;";
+    protected $$col;";
                                     }
                                     $interface[$col] = array($col, $type, $isnull, 0);
                             }
@@ -187,7 +187,7 @@ class $class extends Common
                                             $thisvarinparent[$i]=$row->COLUMN_NAME;
                                             $i++;
                                             $c.= "
-    public $$parentvar;";
+    protected $$parentvar;";
                                     }
                             }
                             else
@@ -202,7 +202,7 @@ class $class extends Common
                                             $thisvarinparent[$i]=$row->COLUMN_NAME;
                                             $i++;
                                             $c.= "
-    public $".$parentvar.";";
+    protected $".$parentvar.";";
                                     }
                             }
     }		
@@ -251,7 +251,7 @@ class $class extends Common
     // **********************
 
     private \$Database; // Database for this object
-    public \$isNew = 0; // Memory for insert
+    private \$isNew = 0; // Memory for insert
     private \$isToSaveOrToUpdate = 0; // Memory for update
     //Memory array of fields for update
     private \$structure = array(
