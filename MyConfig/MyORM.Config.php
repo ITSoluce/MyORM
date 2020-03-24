@@ -52,3 +52,12 @@ $intotheset = "
 $MyORMINTOTHESET = $intotheset;
 //Define specific code when set is use (u can update a date field, so ur database must be normalise)
 //Don't forget to test field existance if some table doesn't have ur field.
+
+
+//For API
+$EnableAPIMyORM = 1; // If client will work on json only
+$APIServer = 1; // If 0 client mode
+$APIServerURL = "http://orm/src/API/";
+$PrivateKey = "080501345678";
+$PublicKey =   "7FAFECBA987"; //<= U must give this key. (complete revert of key check (simple add) to reach FF..%..FF) (care to not overstack the int value of the hexa sum)
+//$PrivateKey+$PublicKey = "FFFFFFFFFFFF"
