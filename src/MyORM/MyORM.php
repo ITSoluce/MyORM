@@ -27,29 +27,70 @@ class MyORM {
 			}
 			else
 			{
-				//$sql = new sql();
-				global ${"".MyORMSQL};
-				$sql = ${"".MyORMSQL};
-				
-				if(MyORMAUTOGENERATE && $sql->sql_table_exists($classname)) /* Check si il peut etre générer et s'il existe */
-				{
-					$ORM = new MyORM();
-					$content = $ORM->classgenerator($classname);
-					
-					if(MyORMALWAYSAUTOGENERATE)
-					{
-						$content = str_replace("<?php", "", $content);
-						$content = str_replace("?>", "", $content);
-					
-						eval($content);
-					}
-					else 
-					{
-						if($ORM->saveclasstofile($classname ."_v" . MyORMFileVersion .".php", $content, MyORMDAL))
-						{
-							require(MyORMDAL . $classname ."_v". MyORMFileVersion .".php");
-						}
-					}
+                                if (EnableAPIMyORM == 1 && APIServer == 0)
+                                {
+                                    $Query = "";
+
+                                    // Création d'un flux
+                                    $opts = array(
+                                      'http'=>array(
+                                        'method'=>"GET",
+                                        'header'=>"Accept-language: en\r\n" .
+                                                  "APIAUTHENTIFICATION:".PublicKey."\r\n"
+                                      )
+                                    );
+
+                                    $context = stream_context_create($opts);
+
+                                    try {
+                                        ob_start();
+                                        $content = @file_get_contents(APIServerURL."/".$classname."/Ineedtheclassplease", false, $context);
+                                        ob_get_clean();
+                                        
+                                        if(MyORMALWAYSAUTOGENERATE)
+                                        {
+                                                $content = str_replace("<?php", "", $content);
+                                                $content = str_replace("?>", "", $content);
+
+                                                eval($content);
+                                        }
+                                        else 
+                                        {
+                                                $ORM = new MyORM();
+                                                if($ORM->saveclasstofile($classname ."_v" . MyORMFileVersion .".php", $content, MyORMDAL))
+                                                {
+                                                        require(MyORMDAL . $classname ."_v". MyORMFileVersion .".php");
+                                                }
+                                        }
+                                    }
+                                    catch (Exception $e) {
+                                        die("recuperation error API Server");
+                                    } 
+                                }
+                                else {
+                                    global ${"".MyORMSQL};
+                                    $sql = ${"".MyORMSQL};
+
+                                    if(MyORMAUTOGENERATE && $sql->sql_table_exists($classname)) /* Check si il peut etre générer et s'il existe */
+                                    {
+                                            $ORM = new MyORM();
+                                            $content = $ORM->classgenerator($classname);
+
+                                            if(MyORMALWAYSAUTOGENERATE)
+                                            {
+                                                    $content = str_replace("<?php", "", $content);
+                                                    $content = str_replace("?>", "", $content);
+
+                                                    eval($content);
+                                            }
+                                            else 
+                                            {
+                                                    if($ORM->saveclasstofile($classname ."_v" . MyORMFileVersion .".php", $content, MyORMDAL))
+                                                    {
+                                                            require(MyORMDAL . $classname ."_v". MyORMFileVersion .".php");
+                                                    }
+                                            }
+                                    }
 				}
 			}
 		}
@@ -227,7 +268,7 @@ class $class extends Common
                                             $childvar=ucfirst($row->TABLE_NAME).str_replace ( "Id" , "" , str_replace ( "id" , "" , str_replace ( "ID" , "" , $row->COLUMN_NAME )));
                                             $interface[$childvar] = array($childvar, "ChildObject", 1, 0);
                                             $c.= "
-    public $$childvar;";
+    protected $$childvar;";
                                     }
                             }
                             else
@@ -239,7 +280,7 @@ class $class extends Common
                                             $childvar=ucfirst($row->TABLE_NAME).str_replace ( "Id" , "" , str_replace ( "id" , "" , str_replace ( "ID" , "" , $row->COLUMN_NAME )));
                                             $interface[$childvar] = array($childvar, "ChildObject", 1, 0);
                                             $c.= "
-    public $$childvar;";
+    protected $$childvar;";
                                     }
                             }
     }
@@ -277,34 +318,110 @@ class $class extends Common
     // **********************
     // Constructor
     // **********************
-    function __construct (\$val = null, \$property = self::primary_key)
+    function __construct (\$val = null, \$property = self::primary_key, \$properties = null)
     {
-        global $".$select.";
-        if((isset(\$val))&&(trim(\$val)!=\"\"))
-        {
-            \$query = $".$select."->sql_query(\"SELECT * FROM `$class` WHERE `\$property` = \".parent::quote(\$this->structure[\$property],\$val) .\" LIMIT 1\");
+        global \$$select;
 
-            if($".$select."->sql_num_rows(\$query) != 0)
+        if(is_null(\$property)){
+            \$property = self::primary_key;
+        }
+
+        if ( (isset(\$val)) && (!is_null(\$val)) )
+        {
+            if (\$property == \"reloadObjectFromJsonDecodeObject\")
             {
-                while(\$row = $".$select."->sql_fetch_object(\$query))
+                foreach (\$val AS \$key => \$value)
                 {
-                    ";
-                foreach($interface as $colomName=>$colomArray)
-                {
-                    if($colomArray[1] != "ChildObject" && $colomArray[1] != "ParentObject")
-                    {
-                    $c .= "\$this->$colomName = \$this->formater(\$this->structure['$colomName'],\$row->$colomName);
-                    \$this->structure['$colomName'][4] = \$this->$colomName;
-                    ";
+                    if (!isset(\$this->structure[\$key])) {
+                        throw new \Exception(\"set for \$key doesn't exists\");
+                    }
+                    else {
+                        if ( (\$this->structure[\$key][1] == \"ParentObject\") && (!empty(\$value)) ) {
+                            \$classname = str_replace(\"parent_\",\"\",\"MyORM\\\\\".strtolower(\$key));
+                            \$this->{\$key} = new \$classname(\$value,\"reloadObjectFromJsonDecodeObject\");
+                        }
+                        elseif ( (\$this->structure[\$key][1] == \"ChildObject\") && (!empty(\$value)) ) {
+                            \$Return = array();
+                            \$classname = str_replace(\"_".$class."\",\"\",\"MyORM\\\\\".strtolower(\$key));
+                            foreach (\$value AS \$key2 => \$value2)
+                            {
+                                \$Return[] = new \$classname(\$value2,\"reloadObjectFromJsonDecodeObject\");
+                            }
+                            \$this->{\$key} = \$Return;
+                        }
+                        else {
+                            \$this->{\$key} = \$this->formater(\$this->structure[\$key],\$value);
+                            \$this->structure[\$key][4] = \$this->{\$key};
+                            if ( (APIServer == 1) && (!is_null(\$this->{self::primary_key})) ) {                            
+                                \$this->structure[\$key][3] = 1;
+                                \$this->isToSaveOrToUpdate=1;
+                            }
+                        }
                     }
                 }
-$c .= "
+                
+                if ( (APIServer == 1) && (empty(\$this->{self::primary_key})) ) {
+                    \$this->isNew=1;
                 }
             }
             else
             {
-                \$this->isNew=1;
-                \$this->isToSaveOrToUpdate=1;
+                \$row = array();
+                if (EnableAPIMyORM == 1 && APIServer == 0)
+                {
+                    \$return = Parent::callAPI(\"GET\",APIServerURL.\"/".$class."/\".\$val);
+
+                    \$return = json_decode(\$return);
+
+                    if (!is_array(\$return))
+                            \$array[] = \$return;
+
+                    if(count(\$array)!=0)
+                    {
+                        \$row = \$array[0];
+                    }
+                    else
+                    {
+                        \$this->isNew=1;
+                        \$this->isToSaveOrToUpdate=1;
+                    }
+                }
+                else
+                {
+                    \$query = \$connection->sql_query(parent::getSelectQuery(\"".$class."\",array(array (\"\",\$property,\"Equal\",parent::quote(\$this->structure[\$property],\$val))),\"1\"));
+
+                    if(\$connection->sql_num_rows(\$query) != 0)
+                    {
+                        \$row = \$connection->sql_fetch_object(\$query);
+                    }
+                    else
+                    {
+                        \$this->isNew=1;
+                        \$this->isToSaveOrToUpdate=1;
+                    }
+                }
+    
+                foreach (\$this->structure AS \$key => \$value) {
+                    if ( (\$this->structure[\$key][1] != \"ParentObject\") && (\$this->structure[\$key][1] != \"ChildObject\") ) {
+                        \$this->{\$key} = \$this->formater(\$this->structure[\$key],\$row->{\$key});
+                        \$this->structure[\$key][4] = \$row->{\$key};
+                    }
+                    elseif ( (\$this->structure[\$key][1] == \"ParentObject\") && (!empty(\$row->{\$key})) ) {
+                            \$classname = str_replace(\"parent_\",\"\",\"MyORM\\\".strtolower(\$key));
+                            \$this->{\$key} = new \$classname(\$row->{$key},\"reloadObjectFromJsonDecodeObject\");
+                        }
+                        elseif ( (\$this->structure[\$key][1] == \"ChildObject\") && (!empty(\$row->{\$key})) ) {
+                            \$Return = array();
+                            \$classname = str_replace(\"_".$class."\",\"\",\"MyORM\\\".strtolower(\$key));
+                            foreach (\$row->{\$key} AS \$key2 => \$value2)
+                            {
+                                \$Return[] = new \$classname(\$value2,\"reloadObjectFromJsonDecodeObject\");
+                            }
+                            \$this->{\$key} = \$Return;
+                        }
+                }
+                
+
             }
         }
 
@@ -336,7 +453,7 @@ $c .= "
         }
         else
         {
-            throw new DALException(\"get for \$property doesn't exists\");
+            throw new Exception(\"get for \$property doesn't exists\");
         }
     }
 
@@ -351,7 +468,7 @@ $c .= "
         }
         else
         {
-            throw new DALException( \"set for \$property doesn't exists\");
+            throw new Exception( \"set for \$property doesn't exists\");
         }
     }
 
@@ -370,7 +487,7 @@ $c .= "
             }
         }
         else {
-            throw new DALException(\"get for \$property doesn't exists\");
+            throw new Exception(\"get for \$property doesn't exists\");
         }
     }
 
@@ -379,7 +496,7 @@ $c .= "
         if ( is_callable( array(\$this,'set_'.(string)\$property) ) )
             return call_user_func( array(\$this,'set_'.(string)\$property), NULL );
         else
-            throw new DALException(\"set for \$property doesn't exists\");
+            throw new Exception(\"set for \$property doesn't exists\");
     }
 	
     // **********************
@@ -577,27 +694,22 @@ $c .= "
 		$c.="
     public function get_".ucfirst($varname)."()
     {
-        global $"."$select;
+        global \$$select;
 
-        if ((is_null($"."this->".$varname."))&&(!is_null($"."this->$key)))
+        if ((is_null(\$this->".$varname."))&&(!is_null(\$this->$key)))
         {
-            $"."query=".$query.";
-            $"."result=$".$select."->sql_query($"."query);
-            while($"."row = $".$select."->sql_fetch_object(\$result,'MyORM\\$childobject'))
-            {
-                $"."this->add_".ucfirst($varname)."($"."row);
-            }
+            \$this->".$varname." = Common::getList(\$$select,\"".$class."\",array(array (\"\",\"".$childcolumn."\",\"Equal\",\$this->$key)),\"".$childtable."\");
         }
         return ($"."this->".$varname.");
     }
 
     public function set_".ucfirst($varname)."($".$childobject."s)
     {
-        if (!isset($"."this->".$varname.") || (isset($"."this->".$varname.") && count($"."this->".$varname.")==0))
-            foreach ($".$childobject."s as $"."var)
-                add_".ucfirst($varname)."($"."var);
+        if (!isset(\$this->".$varname.") || (isset(\$this->".$varname.") && count(\$this->".$varname.")==0))
+            foreach ($".$childobject."s as \$var)
+                \$this->add_".ucfirst($varname)."(\$var);
         else
-            throw new DALException( \"Can set ".$varname." cause actual ".$varname." is not empty\");
+            throw new Exception( \"Can set ".$varname." cause actual ".$varname." is not empty\");
         return ($".$childobject."s);
     }
 
@@ -656,7 +768,7 @@ $c .= "
             {
                 $".$save."->sql_rollbacktransaction();
             }
-            throw new DALException($"."erreur);
+            throw new Exception($"."erreur);
         }
         else
             return $".$save."->sql_affected_rows($"."result);
@@ -729,7 +841,7 @@ $c .= "
                     {
                         $".$save."->sql_rollbacktransaction();
                     }
-                    throw new DALException($"."erreur);
+                    throw new Exception($"."erreur);
                 }
                 else
                     $"."return = $".$save."->sql_affected_rows($"."Result);
@@ -741,8 +853,8 @@ $c .= "
             }
             return $"."return;
         }
-        foreach ($"."this->structure as $"."field)
-            unset($"."this->$"."field[0]);	
+        foreach ($"."this->structure as \$field)
+            unset($"."this->\$field[0]);	
     }
 ";
 	
@@ -762,84 +874,101 @@ $c .= "
             $"."this->isNew=1;
         }
         ";
-	/* Parents save if some changes */
-	if ($table_relation_exists)
-	{
-		$sqlorm="SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, REFERENCED_TABLE_SCHEMA, REFERENCED_TABLE_NAME ,REFERENCED_COLUMN_NAME FROM ".$relation." WHERE TABLE_NAME = '".$table."'";
-	}
-	else
-	{
-		$sqlorm="SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, REFERENCED_TABLE_SCHEMA, REFERENCED_TABLE_NAME ,REFERENCED_COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_NAME = '".$table."' AND TABLE_SCHEMA = '".$sqlormconnect->get_Database()."' AND REFERENCED_COLUMN_NAME IS NOT NULL";
-	}
-	$result = $sqlormconnect->sql_query($sqlorm);
-	if ($sqlormconnect->sql_num_rows($result)>0)
-	{
-	while ($row = $sqlormconnect->sql_fetch_object($result))
-	{
-		$varname=str_replace ( "Id" , "" , str_replace ( "id" , "" , str_replace ( "ID" , "" , $row->COLUMN_NAME )));
-		$parenttable=$row->REFERENCED_TABLE_NAME;
-		$parentcolumn=$row->REFERENCED_COLUMN_NAME;
-		$childcolumn=$row->COLUMN_NAME;
-		$childobject = $row->REFERENCED_TABLE_NAME;
 	
-		$c.="
-        if (!is_null($"."this->"."Parent".$varname."))
-                $"."this->$childcolumn = $"."this->set_".$parentcolumn."($"."this->"."Parent".$varname."->save($"."transaction));	 
-        ";
-	}
-	}
-	$c.="
-        if ($"."this->isToSaveOrToUpdate==1)
+        /* Parents save if some changes */
+        if ($table_relation_exists)
         {
+                $sqlorm="SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, REFERENCED_TABLE_SCHEMA, REFERENCED_TABLE_NAME ,REFERENCED_COLUMN_NAME FROM ".$relation." WHERE TABLE_NAME = '".$table."'";
+        }
+        else
+        {
+                $sqlorm="SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, REFERENCED_TABLE_SCHEMA, REFERENCED_TABLE_NAME ,REFERENCED_COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_NAME = '".$table."' AND TABLE_SCHEMA = '".$sqlormconnect->get_Database()."' AND REFERENCED_COLUMN_NAME IS NOT NULL";
+        }
+        $result = $sqlormconnect->sql_query($sqlorm);
+        if ($sqlormconnect->sql_num_rows($result)>0)
+        {
+            while ($row = $sqlormconnect->sql_fetch_object($result))
+            {
+                $varname=str_replace ( "Id" , "" , str_replace ( "id" , "" , str_replace ( "ID" , "" , $row->COLUMN_NAME )));
+                $parenttable=$row->REFERENCED_TABLE_NAME;
+                $parentcolumn=$row->REFERENCED_COLUMN_NAME;
+                $childcolumn=$row->COLUMN_NAME;
+                $childobject = $row->REFERENCED_TABLE_NAME;
 
-            if ((isset($"."this->$key))&&($"."this->$key!=\"0\")&&($"."this->isNew!=1))
-            {
-                \$query = parent::makequery('UPDATE', $".$save."->Database, '".$class."', \$this->structure);
-                \$result=$".$save."->sql_query($"."query);
+                $c.="
+        if (!empty($"."this->"."Parent".$varname."))
+            $"."this->$childcolumn = $"."this->set_".$parentcolumn."($"."this->"."Parent".$varname."->save($"."transaction));	 
+        ";
             }
-            else
-            {
-                \$query = parent::makequery('INSERT', $".$save."->Database, '".$class."', $"."this->structure);
-                $".$save."->sql_query($"."query);
-                \$this->$key=$".$save."->sql_insert_id();
-                \$this->structure['$key'][\"4\"] = \$this->$key;
-                \$this->isNew=0;
+        }
+        
+	$c.="
+        if (\$this->isToSaveOrToUpdate == 1) {
+            if (EnableAPIMyORM == 1 && APIServer == 0) {
+                \$json = \$this->toJson('onlychange');
+
+                if ((isset(\$this->$key))&&(\$this->$key!=\"0\")&&(\$this->isNew!=1)) {
+                    Parent::callAPI(\"PUT\",APIServerURL.\"/".$class."/\".\$this->$key,\$json);
+                }
+                else {
+                    \$this->$key=Parent::callAPI(\"POST\",APIServerURL.\"/".$class."/\",\$json);
+                    \$this->structure['$key'][\"4\"] = \$this->$key;
+                    \$this->isNew=0;
+                } 
+            }
+            else {";
+                
+        
+                $c.="
+                if ((isset($"."this->$key))&&($"."this->$key!=\"0\")&&($"."this->isNew!=1))
+                {
+                    \$query = parent::makequery('UPDATE', $".$save."->Database, '".$class."', \$this->structure);
+                    \$result=$".$save."->sql_query($"."query);
+                }
+                else
+                {
+                    \$query = parent::makequery('INSERT', $".$save."->Database, '".$class."', $"."this->structure);
+                    $".$save."->sql_query($"."query);
+                    \$this->$key=$".$save."->sql_insert_id();
+                    \$this->structure['$key'][\"4\"] = \$this->$key;
+                    \$this->isNew=0;
+                }";          
+                
+                $c.="
             }
         }
 	";
 	
-	if ($table_relation_exists)
-	{
-		$sqlorm="SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, REFERENCED_TABLE_SCHEMA, REFERENCED_TABLE_NAME ,REFERENCED_COLUMN_NAME FROM ".$relation." WHERE REFERENCED_TABLE_NAME = '".$table."' AND REFERENCED_COLUMN_NAME = '".$key."'";
-	}
-	else
-	{
-		$sqlorm="SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, REFERENCED_TABLE_SCHEMA, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_NAME = '".$table."' AND REFERENCED_COLUMN_NAME = '".$key."' AND TABLE_SCHEMA = '".$sqlormconnect->get_Database()."'";
-	}
-	$result = $sqlormconnect->sql_query($sqlorm);
-	if ($sqlormconnect->sql_num_rows($result)>0)
-	{
-	while ($row = $sqlormconnect->sql_fetch_object($result))
-	{
-		$varname=ucfirst($row->TABLE_NAME).str_replace ( "Id" , "" , str_replace ( "id" , "" , str_replace ( "ID" , "" , $row->COLUMN_NAME )));
-		$childtable=$row->TABLE_NAME;
-		$childobject= $row->TABLE_NAME;
-		$childcolumn=$row->COLUMN_NAME;
-	
-		$c.="
-        if (!is_null($"."this->".$varname."))
-                $"."this->save_".$varname."($"."transaction);
-        ";
-	
-	}
-	}
+        /* Childs save if some changes */
+        if ($table_relation_exists) {
+            $sqlorm="SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, REFERENCED_TABLE_SCHEMA, REFERENCED_TABLE_NAME ,REFERENCED_COLUMN_NAME FROM ".$relation." WHERE REFERENCED_TABLE_NAME = '".$table."' AND REFERENCED_COLUMN_NAME = '".$key."'";
+        }
+        else {
+            $sqlorm="SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, REFERENCED_TABLE_SCHEMA, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_NAME = '".$table."' AND REFERENCED_COLUMN_NAME = '".$key."' AND TABLE_SCHEMA = '".$sqlormconnect->get_Database()."'";
+        }
+        $result = $sqlormconnect->sql_query($sqlorm);
+        if ($sqlormconnect->sql_num_rows($result)>0)
+        {
+            while ($row = $sqlormconnect->sql_fetch_object($result))
+            {
+                $varname=ucfirst($row->TABLE_NAME).str_replace ( "Id" , "" , str_replace ( "id" , "" , str_replace ( "ID" , "" , $row->COLUMN_NAME )));
+                $childtable=$row->TABLE_NAME;
+                $childobject= $row->TABLE_NAME;
+                $childcolumn=$row->COLUMN_NAME;
+
+                $c.="
+            if (!empty($"."this->".$varname."))
+                    $"."this->save_".$varname."($"."transaction);
+            ";
+            }
+        }
 	
 	$c.= "
         $"."this->isToSaveOrToUpdate=0;
-        foreach ($"."this->structure as $"."field)
-            if(isset($"."field[0]))
+        foreach ($"."this->structure as \$field)
+            if(isset(\$field[0]))
             {
-                $"."this->structure[$"."field[0]][3]=0;
+                $"."this->structure[\$field[0]][3]=0;
             }
 
         return $"."this->$key;
@@ -860,14 +989,14 @@ $c .= "
         $"."this->LoadAllParents();
         $"."this->LoadAllChilds();
         $"."return = \"Object \".__CLASS__.\" (<br>\";
-        foreach ($"."this->structure as $"."field)
+        foreach ($"."this->structure as \$field)
         {
-            if ( ($"."field[1] == 'ChildObject') && (!is_null($"."this->{"."$"."field[0]})) && ( ( $"."var == 'first' ) || ( $"."var == 'down' ) ) )
+            if ( (\$field[1] == 'ChildObject') && (!is_null($"."this->{"."\$field[0]})) && ( ( $"."var == 'first' ) || ( $"."var == 'down' ) ) )
             {
-                $"."return .= '\"'.$"."field[0].'\" =>';
+                $"."return .= '\"'.\$field[0].'\" =>';
                 $"."return .= \" Array ( <br>\";
                 $"."i=0;
-                foreach ($"."this->{"."$"."field[0]} as &$"."childvar)
+                foreach ($"."this->{"."\$field[0]} as &$"."childvar)
                 {
                     $"."return .= $"."childvar->toString('down');
                     $"."return .= \",<br>\";
@@ -878,102 +1007,106 @@ $c .= "
             }
             else
             {
-                if ( ($"."field[1] == 'ParentObject') && (!is_null($"."this->{"."$"."field[0]})) && ( $"."var == 'first' ) )
+                if ( (\$field[1] == 'ParentObject') && (!is_null($"."this->{"."\$field[0]})) && ( $"."var == 'first' ) )
                 {
-                    $"."return .= '\"'.$"."field[0].'\" => ';
-                    $"."return .= $"."this->{"."$"."field[0]}->toString('none');
+                    $"."return .= '\"'.\$field[0].'\" => ';
+                    $"."return .= $"."this->{"."\$field[0]}->toString('none');
                     $"."return .= \"<br>\";
                 }
                 else
                 {					
-                    if ($"."this->{"."$"."field[0]}==\"\")
+                    if ($"."this->{"."\$field[0]}==\"\")
                     {
-                        if ($"."field[2]==1)
+                        if (\$field[2]==1)
                         {
-                            $"."return .= '\"'.$"."field[0].'\" => null<br>';
+                            $"."return .= '\"'.\$field[0].'\" => null<br>';
                         }
                         else
                         {
-                            $"."return .= '\"'.$"."field[0].'\" => \"\"<br>';
+                            $"."return .= '\"'.\$field[0].'\" => \"\"<br>';
                         }
                     }
                     else
                     {
-                        if ( ($"."field[1] != 'ParentObject') && ($"."field[1] != 'ChildObject') )
+                        if ( (\$field[1] != 'ParentObject') && (\$field[1] != 'ChildObject') )
                         {
-                            $"."return .= '\"'.$"."field[0].'\" => '.$"."this->{"."$"."field[0]}.'<br>';
+                            $"."return .= '\"'.\$field[0].'\" => '.$"."this->{"."\$field[0]}.'<br>';
                         }
                     }
                 }
             }
         }
-        $"."return = substr($"."return,0,-1);
+        
         $"."return .= \")\";
         return $"."return;
     }
 
-    public function get_toJson($"."var = 'first')
-    {
-        $"."this->LoadAllParents();
-        $"."this->LoadAllChilds();
-        $"."return = \"{\";
-        foreach ($"."this->structure as $"."field)
-        {
-            if ( ($"."field[1] == 'ChildObject') && (!is_null($"."this->{"."$"."field[0]})) && ( ( $"."var == 'first' ) || ( $"."var == 'down' ) ) )
+    public function toJson(\$var = 'all') {
+    /*
+     * this : return the loaded object
+     * all : return all childs collection / all parent from this object
+     * onlychange : return change on the loaded object (work only on loaded childs collection and loaded parent
+     * '{void}' : only this object attributes.
+     * all other : return all childs collection and this object attributes.
+     */
+    if ( (\$var != \"onlychange\") && (\$var != \"this\") ) {
+        \$this->LoadAllParents();
+        \$this->LoadAllChilds();
+    }
+
+    \$return = \"{\";
+    foreach (\$this->structure as \$field) {
+        if ( (\$field[1] == 'ChildObject') && (!empty(\$this->{\$field[0]})) && ( !empty(\$var) ) && ( \$var != 'onlychange' ) ) {
+            \$return .= '\"'.\$field[0].'\":';
+            \$return .= '[';
+            foreach (\$this->{\$field[0]} as &\$childvar)
             {
-                $"."return .= '\"'.$"."field[0].'\":';
-                $"."return .= \"[\";
-                $"."i=0;
-                foreach ($"."this->{"."$"."field[0]} as &$"."childvar)
-                {
-                    $"."return .= $"."childvar->get_toJson('down');
-                    $"."return .= \",\";
-                    $"."i++;
-                }
-                $"."return = substr($"."return, 0, -1);
-                $"."return .= \"],\";
+                \$return .= \$childvar->toJson(\$var);
+                \$return .= ',';
             }
-            else
-            {
-                if ( ($"."field[1] == 'ParentObject') && (!is_null($"."this->{"."$"."field[0]})) && ( $"."var == 'first' ) )
-                {
-                    $"."return .= '\"'.$"."field[0].'\":';
-                    $"."return .= $"."this->{"."$"."field[0]}->get_toJson('none');
-                    $"."return .= \",\";
-                }
-                else
-                {					
-                    if ($"."this->{"."$"."field[0]}==\"\")
-                    {
-                        if ($"."field[2]==1)
+            \$return = substr(\$return, 0, -1);
+            \$return .= '],';
+        }
+        elseif ( (\$field[1] == 'ParentObject') && (!empty(\$this->{\$field[0]})) && ( ( \$var == 'all' ) || ( \$var == 'this' ) ) ) {
+                \$return .= '\"'.\$field[0].'\":';
+                \$return .= \$this->{\$field[0]}->toJson(\$var);
+                \$return .= ',';
+            }
+            elseif ( (\$field[1] != 'ParentObject') && (\$field[1] != 'ChildObject') ) {
+                    if ( ( ( (\$field[3]==1) || (\$field[0]==self::primary_key) ) && ( \$var == 'onlychange' ) ) || ( \$var != 'onlychange' ) ) {
+                        if (empty(\$this->{\$field[0]}))
                         {
-                            $"."return .= '\"'.$"."field[0].'\":null,';
-                        }
-                        else
-                        {
-                            $"."return .= '\"'.$"."field[0].'\":\"\",';
-                        }
-                    }
-                    else
-                    {
-                        if ( ($"."field[1] != 'ParentObject') && ($"."field[1] != 'ChildObject') )
-                        {	
-                            if (($"."field[1]!='timestamp')&&($"."field[1]!='date')&&($"."field[1]!='datetime')&&($"."field[1]!='char')&&($"."field[1]!='varchar')&&($"."field[1]!='tinyblob')&&($"."field[1]!='tinytext')&&($"."field[1]!='blob')&&($"."field[1]!='text')&&($"."field[1]!='mediumblob')&&($"."field[1]!='mediumtext')&&($"."field[1]!='longblob')&&($"."field[1]!='longtext')&&($"."field[1]!='time')&&($"."field[1]!='enum'))
+                            if (\$field[2]==1)
                             {
-                                $"."return .= '\"'.$"."field[0].'\":'.$"."this->{"."$"."field[0]}.',';
+                                \$return .= '\"'.\$field[0].'\":null,';
                             }
                             else
                             {
-                                $"."return .= '\"'.$"."field[0].'\":\"'.$"."this->{"."$"."field[0]}.'\",';
+                                \$return .= '\"'.\$field[0].'\":\"\",';
+                            }
+                        }
+                        else
+                        {
+                            \$t=explode('-',\$field[1]);
+                            if ((\$t[0]!='timestamp')&&(\$t[0]!='date')&&(\$t[0]!='datetime')&&(\$t[0]!='char')&&(\$t[0]!='varchar')&&(\$t[0]!='tinyblob')&&(\$t[0]!='tinytext')&&(\$t[0]!='blob')&&(\$t[0]!='text')&&(\$t[0]!='mediumblob')&&(\$t[0]!='mediumtext')&&(\$t[0]!='longblob')&&(\$t[0]!='longtext')&&(\$t[0]!='time')&&(\$t[0]!='enum'))
+                            {
+                                \$return .= '\"'.\$field[0].'\":'.\$this->{\$field[0]}.',';
+                            }
+                            else
+                            {
+                                \$return .= '\"'.\$field[0].'\":\"'.\$this->{\$field[0]}.'\",';
                             }
                         }
                     }
                 }
-            }
+
         }
-        $"."return = substr($"."return,0,-1);
-        $"."return .= \"}\";
-        return $"."return;
+        if (\$return!='{') {
+            \$return = substr(\$return,0,-1);
+        }
+
+        \$return .= '}';
+        return \$return;
     }
 
     public function __clone()
