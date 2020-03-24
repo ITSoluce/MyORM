@@ -1,0 +1,6 @@
+RewriteEngine On
+ 
+RewriteRule 	^([A-Za-z0-9-_]+)/?$ ?Object=$1 [NC,L,QSA]
+RewriteRule 	^([A-Za-z0-9-_]+)/([A-Za-z0-9-_]+)/?$ ?Object=$1&Id=$2 [NC,L,QSA]
+RewriteRule 	^([A-Za-z0-9-_]+)/([A-Za-z0-9-_]+)/([A-Za-z0-9-_]+)/?$ ?Object=$1&Id=$2&Variable=$3 [NC,L,QSA]
+RewriteRule 	^([A-Za-z0-9-_]+)/([A-Za-z0-9-_]+)/([A-Za-z0-9-_]+)/([A-Za-z0-9-_]+)/?$ ?Object=$1&Id=$2&Variable=$3&Property=$4 [NC,L,QSA]
