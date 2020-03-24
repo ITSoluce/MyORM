@@ -337,12 +337,12 @@ class $class extends Common
                     }
                     else {
                         if ( (\$this->structure[\$key][1] == \"ParentObject\") && (!empty(\$value)) ) {
-                            \$classname = str_replace(\"parent_\",\"\",\"MyORM\\\\\".strtolower(\$key));
+                            \$classname = str_replace(\"parent_\",\"\",'MyORM\\\\'.strtolower(\$key));
                             \$this->{\$key} = new \$classname(\$value,\"reloadObjectFromJsonDecodeObject\");
                         }
                         elseif ( (\$this->structure[\$key][1] == \"ChildObject\") && (!empty(\$value)) ) {
                             \$Return = array();
-                            \$classname = str_replace(\"_".$class."\",\"\",\"MyORM\\\\\".strtolower(\$key));
+                            \$classname = str_replace(\"_".$class."\",\"\",'MyORM\\\\'.strtolower(\$key));
                             foreach (\$value AS \$key2 => \$value2)
                             {
                                 \$Return[] = new \$classname(\$value2,\"reloadObjectFromJsonDecodeObject\");
@@ -407,12 +407,12 @@ class $class extends Common
                         \$this->structure[\$key][4] = \$row->{\$key};
                     }
                     elseif ( (\$this->structure[\$key][1] == \"ParentObject\") && (!empty(\$row->{\$key})) ) {
-                            \$classname = str_replace(\"parent_\",\"\",\"MyORM\\\".strtolower(\$key));
+                            \$classname = str_replace(\"parent_\",\"\",'MyORM\\\\'.strtolower(\$key));
                             \$this->{\$key} = new \$classname(\$row->{$key},\"reloadObjectFromJsonDecodeObject\");
                         }
                         elseif ( (\$this->structure[\$key][1] == \"ChildObject\") && (!empty(\$row->{\$key})) ) {
                             \$Return = array();
-                            \$classname = str_replace(\"_".$class."\",\"\",\"MyORM\\\".strtolower(\$key));
+                            \$classname = str_replace(\"_".$class."\",\"\",'MyORM\\\\'.strtolower(\$key));
                             foreach (\$row->{\$key} AS \$key2 => \$value2)
                             {
                                 \$Return[] = new \$classname(\$value2,\"reloadObjectFromJsonDecodeObject\");
