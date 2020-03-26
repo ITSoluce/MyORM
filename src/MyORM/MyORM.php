@@ -4,116 +4,106 @@ namespace MyORM;
 
 class MyORM {
 	function __construct() {
-		if (version_compare(phpversion(), '5.3.0', '>=')) {
-			spl_autoload_register(array(__CLASS__, 'autoload'), true, FALSE);
-		} else {
-			spl_autoload_register(array(__CLASS__, 'autoload'));
-		}
+            if (version_compare(phpversion(), '5.3.0', '>=')) {
+                spl_autoload_register(array(__CLASS__, 'autoload'), true, FALSE);
+            } else {
+                spl_autoload_register(array(__CLASS__, 'autoload'));
+            }
         }
 	
         public static function autoload($classname)
 	{
-		if(strstr($classname, "MyORM\\"))
-		{
-			$classname = str_replace("MyORM\\", "", $classname);
-			
-			if(file_exists(MyORMBLL . "$classname.php")) /* File exists dans le dossier BLL ? */
-			{
-				require MyORMBLL . "$classname.php";
-			}
-			elseif(file_exists(MyORMDAL . $classname . "_v". MyORMFileVersion .".php")) /* File exists dans le dossier DAL ? */
-			{
-				require MyORMDAL . $classname . "_v". MyORMFileVersion .".php";
-			}
-			else
-			{
-                                if (EnableAPIMyORM == 1 && APIServer == 0)
-                                {
-                                    $Query = "";
+            if(strstr($classname, "MyORM\\"))
+            {
+                $classname = str_replace("MyORM\\", "", $classname);
 
-                                    // Création d'un flux
-                                    $opts = array(
-                                      'http'=>array(
-                                        'method'=>"GET",
-                                        'header'=>"Accept-language: en\r\n" .
-                                                  "APIAUTHENTIFICATION:".PublicKey."\r\n"
-                                      )
-                                    );
+                if(file_exists(__DIR__.'/../../'. MyORMBLL . "$classname.php")) /* File exists dans le dossier BLL ? */
+                {
+                    require __DIR__.'/../../'. MyORMBLL . "$classname.php";
+                }
+                elseif(file_exists(__DIR__.'/../../'. MyORMDAL . $classname . "_v". MyORMFileVersion .".php")) /* File exists dans le dossier DAL ? */
+                {
+                    require __DIR__.'/../../'. MyORMDAL . $classname . "_v". MyORMFileVersion .".php";
+                }
+                else
+                {
+                    if (EnableAPIMyORM == 1 && APIServer == 0) {
+                        $Query = "";
 
-                                    $context = stream_context_create($opts);
+                        // Création d'un flux
+                        $opts = array(
+                          'http'=>array(
+                            'method'=>"GET",
+                            'header'=>"Accept-language: en\r\n" .
+                                      "APIAUTHENTIFICATION:".PublicKey."\r\n"
+                          )
+                        );
 
-                                    try {
-                                        ob_start();
-                                        $content = @file_get_contents(APIServerURL."/".$classname."/Ineedtheclassplease", false, $context);
-                                        ob_get_clean();
-                                        
-                                        if(MyORMALWAYSAUTOGENERATE)
-                                        {
-                                                $content = str_replace("<?php", "", $content);
-                                                $content = str_replace("?>", "", $content);
+                        $context = stream_context_create($opts);
 
-                                                eval($content);
-                                        }
-                                        else 
-                                        {
-                                                $ORM = new MyORM();
-                                                if($ORM->saveclasstofile($classname ."_v" . MyORMFileVersion .".php", $content, MyORMDAL))
-                                                {
-                                                        require(MyORMDAL . $classname ."_v". MyORMFileVersion .".php");
-                                                }
-                                        }
-                                    }
-                                    catch (Exception $e) {
-                                        die("recuperation error API Server");
-                                    } 
+                        try {
+                            ob_start();
+                            $content = @file_get_contents(APIServerURL."/".$classname."/Ineedtheclassplease", false, $context);
+                            ob_get_clean();
+
+                            if(MyORMALWAYSAUTOGENERATE) {
+                                $content = str_replace("<?php", "", $content);
+                                $content = str_replace("?>", "", $content);
+
+                                eval($content);
+                            }
+                            else {
+                                $ORM = new MyORM();
+                                if($ORM->saveclasstofile($classname ."_v" . MyORMFileVersion .".php", $content, __DIR__.'/../../'. MyORMDAL)) {
+                                        require(__DIR__.'/../../'. MyORMDAL . $classname ."_v". MyORMFileVersion .".php");
                                 }
-                                else {
-                                    global ${"".MyORMSQL};
-                                    $sql = ${"".MyORMSQL};
+                            }
+                        }
+                        catch (Exception $e) {
+                            die("recuperation error API Server");
+                        } 
+                    }
+                    else {
+                        global ${"".MyORMSQL};
+                        $sql = ${"".MyORMSQL};
 
-                                    if(MyORMAUTOGENERATE && $sql->sql_table_exists($classname)) /* Check si il peut etre générer et s'il existe */
-                                    {
-                                            $ORM = new MyORM();
-                                            $content = $ORM->classgenerator($classname);
+                        if(MyORMAUTOGENERATE && $sql->sql_table_exists($classname)) /* Check si il peut etre générer et s'il existe */
+                        {
+                            $ORM = new MyORM();
+                            $content = $ORM->classgenerator($classname);
 
-                                            if(MyORMALWAYSAUTOGENERATE)
-                                            {
-                                                    $content = str_replace("<?php", "", $content);
-                                                    $content = str_replace("?>", "", $content);
+                            if(MyORMALWAYSAUTOGENERATE) {
+                                $content = str_replace("<?php", "", $content);
+                                $content = str_replace("?>", "", $content);
 
-                                                    eval($content);
-                                            }
-                                            else 
-                                            {
-                                                    if($ORM->saveclasstofile($classname ."_v" . MyORMFileVersion .".php", $content, MyORMDAL))
-                                                    {
-                                                            require(MyORMDAL . $classname ."_v". MyORMFileVersion .".php");
-                                                    }
-                                            }
-                                    }
-				}
-			}
-		}
+                                eval($content);
+                            }
+                            else {
+                                if($ORM->saveclasstofile($classname ."_v" . MyORMFileVersion .".php", $content, __DIR__.'/../../'. MyORMDAL)) {
+                                    require(__DIR__.'/../../'. MyORMDAL . $classname ."_v". MyORMFileVersion .".php");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 	}
         
 	public function saveclasstofile($filename,$filecontent,$directory)
 	{
-		if (!file_exists($directory))
-		mkdir($directory);
-		$handle = fopen($directory.$filename, "w");
-		
-		if(fwrite ( $handle , $filecontent ))
-		{
-			fclose($handle);
-			
-			return TRUE;
-		}
-		else 
-		{
-			fclose($handle);
-			
-			return FALSE;
-		}
+            if (!file_exists($directory))
+            mkdir($directory);
+            $handle = fopen($directory.$filename, "w");
+
+            if(fwrite ( $handle , $filecontent )) {
+                fclose($handle);
+                return TRUE;
+            }
+            else 
+            {
+                fclose($handle);
+                return FALSE;
+            }
 	}
 	
 	function classgenerator($table)
@@ -321,19 +311,23 @@ class $class extends Common
     function __construct (\$val = null, \$property = self::primary_key, \$properties = null)
     {
         global \$$select;
-
-        if(is_null(\$property)){
+        \$forced = 0;
+        
+        if (is_null(\$property)) {
             \$property = self::primary_key;
         }
+        else {
+            if (\$property == \"ForcedObjectFromID\") {
+                \$property = self::primary_key;
+                \$forced = 1;
+            }
+        }
 
-        if ( (isset(\$val)) && (!is_null(\$val)) )
-        {
-            if (\$property == \"reloadObjectFromJsonDecodeObject\")
-            {
-                foreach (\$val AS \$key => \$value)
-                {
+        if ( (isset(\$val)) && (!is_null(\$val)) ) {
+            if (\$property == \"reloadObjectFromJsonDecodeObject\") {
+                foreach (\$val AS \$key => \$value) {
                     if (!isset(\$this->structure[\$key])) {
-                        throw new \Exception(\"set for \$key doesn't exists\");
+                        throw new \\MyException\\MyException(\"set for \$key doesn't exists\");
                     }
                     else {
                         if ( (\$this->structure[\$key][1] == \"ParentObject\") && (!empty(\$value)) ) {
@@ -343,8 +337,7 @@ class $class extends Common
                         elseif ( (\$this->structure[\$key][1] == \"ChildObject\") && (!empty(\$value)) ) {
                             \$Return = array();
                             \$classname = str_replace(\"_".$class."\",\"\",'MyORM\\\\'.strtolower(\$key));
-                            foreach (\$value AS \$key2 => \$value2)
-                            {
+                            foreach (\$value AS \$key2 => \$value2) {
                                 \$Return[] = new \$classname(\$value2,\"reloadObjectFromJsonDecodeObject\");
                             }
                             \$this->{\$key} = \$Return;
@@ -364,75 +357,74 @@ class $class extends Common
                     \$this->isNew=1;
                 }
             }
-            else
-            {
+            else {
                 \$row = array();
-                if (EnableAPIMyORM == 1 && APIServer == 0)
-                {
-                    \$return = Parent::callAPI(\"GET\",APIServerURL.\"/".$class."/\".\$val);
+                if (EnableAPIMyORM == 1 && APIServer == 0) {
+                    if (\$forced == 1) {
+                        \$return = Parent::callAPI(\"GET\",APIServerURL.\"/".$class."/\".\$val.\"/ForcedObjectFromID\");
+                        }
+                    else {
+                        \$return = Parent::callAPI(\"GET\",APIServerURL.\"/".$class."/\".\$val);
+                    }
 
                     \$return = json_decode(\$return);
 
-                    if (!is_array(\$return))
-                            \$array[] = \$return;
+                    if (!is_array(\$return)) {
+                        \$array[] = \$return;
+                    }
 
-                    if(count(\$array)!=0)
-                    {
+                    if(count(\$array)!=0) {
                         \$row = \$array[0];
                     }
-                    else
-                    {
+                    else {
                         \$this->isNew=1;
                         \$this->isToSaveOrToUpdate=1;
                     }
                 }
-                else
-                {
+                else {
                     \$query = \$connection->sql_query(parent::getSelectQuery(\"".$class."\",array(array (\"\",\$property,\"Equal\",parent::quote(\$this->structure[\$property],\$val))),\"1\"));
 
-                    if(\$connection->sql_num_rows(\$query) != 0)
-                    {
+                    if(\$connection->sql_num_rows(\$query) != 0) {
                         \$row = \$connection->sql_fetch_object(\$query);
                     }
-                    else
-                    {
+                    else {
                         \$this->isNew=1;
                         \$this->isToSaveOrToUpdate=1;
                     }
                 }
     
-                foreach (\$this->structure AS \$key => \$value) {
-                    if ( (\$this->structure[\$key][1] != \"ParentObject\") && (\$this->structure[\$key][1] != \"ChildObject\") ) {
-                        \$this->{\$key} = \$this->formater(\$this->structure[\$key],\$row->{\$key});
-                        \$this->structure[\$key][4] = \$row->{\$key};
-                    }
-                    elseif ( (\$this->structure[\$key][1] == \"ParentObject\") && (!empty(\$row->{\$key})) ) {
-                            \$classname = str_replace(\"parent_\",\"\",'MyORM\\\\'.strtolower(\$key));
-                            \$this->{\$key} = new \$classname(\$row->{$key},\"reloadObjectFromJsonDecodeObject\");
+                if (\$this->isNew==0) {
+                    foreach (\$this->structure AS \$key => \$value) {
+                        if ( (\$this->structure[\$key][1] != \"ParentObject\") && (\$this->structure[\$key][1] != \"ChildObject\") ) {
+                            \$this->{\$key} = \$this->formater(\$this->structure[\$key],\$row->{\$key});
+                            \$this->structure[\$key][4] = \$row->{\$key};
                         }
-                        elseif ( (\$this->structure[\$key][1] == \"ChildObject\") && (!empty(\$row->{\$key})) ) {
-                            \$Return = array();
-                            \$classname = str_replace(\"_".$class."\",\"\",'MyORM\\\\'.strtolower(\$key));
-                            foreach (\$row->{\$key} AS \$key2 => \$value2)
-                            {
-                                \$Return[] = new \$classname(\$value2,\"reloadObjectFromJsonDecodeObject\");
+                        elseif ( (\$this->structure[\$key][1] == \"ParentObject\") && (!empty(\$row->{\$key})) ) {
+                                \$classname = str_replace(\"parent_\",\"\",'MyORM\\\\'.strtolower(\$key));
+                                \$this->{\$key} = new \$classname(\$row->{$key},\"reloadObjectFromJsonDecodeObject\");
                             }
-                            \$this->{\$key} = \$Return;
-                        }
+                            elseif ( (\$this->structure[\$key][1] == \"ChildObject\") && (!empty(\$row->{\$key})) ) {
+                                \$Return = array();
+                                \$classname = str_replace(\"_".$class."\",\"\",'MyORM\\\\'.strtolower(\$key));
+                                foreach (\$row->{\$key} AS \$key2 => \$value2)
+                                {
+                                    \$Return[] = new \$classname(\$value2,\"reloadObjectFromJsonDecodeObject\");
+                                }
+                                \$this->{\$key} = \$Return;
+                            }
+                    }
                 }
                 
-
+                if (\$forced == 1) {
+                    \$this->{\$property} = \$this->formater(\$this->structure[\$property],\$val);
+                    \$this->structure[\$property][4] = \$val;
+                }
             }
         }
-
-        if (is_null(\$this->{self::primary_key}))
-        {
+        else
+        {   
             \$this->isNew=1;
             \$this->isToSaveOrToUpdate=1;
-        }
-        else
-        {
-           \$this->structure[self::primary_key][4] = \$this->{self::primary_key};
         }
     }
     ";
@@ -453,7 +445,7 @@ class $class extends Common
         }
         else
         {
-            throw new Exception(\"get for \$property doesn't exists\");
+            throw new \\MyException\\MyException(\"get for \$property doesn't exists\");
         }
     }
 
@@ -468,7 +460,7 @@ class $class extends Common
         }
         else
         {
-            throw new Exception( \"set for \$property doesn't exists\");
+            throw new \\MyException\\MyException( \"set for \$property doesn't exists\");
         }
     }
 
@@ -487,7 +479,7 @@ class $class extends Common
             }
         }
         else {
-            throw new Exception(\"get for \$property doesn't exists\");
+            throw new \\MyException\\MyException(\"get for \$property doesn't exists\");
         }
     }
 
@@ -496,7 +488,7 @@ class $class extends Common
         if ( is_callable( array(\$this,'set_'.(string)\$property) ) )
             return call_user_func( array(\$this,'set_'.(string)\$property), NULL );
         else
-            throw new Exception(\"set for \$property doesn't exists\");
+            throw new \\MyException\\MyException(\"set for \$property doesn't exists\");
     }
 	
     // **********************
@@ -709,7 +701,7 @@ class $class extends Common
             foreach ($".$childobject."s as \$var)
                 \$this->add_".ucfirst($varname)."(\$var);
         else
-            throw new Exception( \"Can set ".$varname." cause actual ".$varname." is not empty\");
+            throw new \\MyException\\MyException( \"Can set ".$varname." cause actual ".$varname." is not empty\");
         return ($".$childobject."s);
     }
 
@@ -768,7 +760,7 @@ class $class extends Common
             {
                 $".$save."->sql_rollbacktransaction();
             }
-            throw new Exception($"."erreur);
+            throw new \\MyException\\MyException($"."erreur);
         }
         else
             return $".$save."->sql_affected_rows($"."result);
@@ -841,7 +833,7 @@ class $class extends Common
                     {
                         $".$save."->sql_rollbacktransaction();
                     }
-                    throw new Exception($"."erreur);
+                    throw new \\MyException\\MyException($"."erreur);
                 }
                 else
                     $"."return = $".$save."->sql_affected_rows($"."Result);

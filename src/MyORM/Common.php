@@ -159,7 +159,7 @@ class Common
 		}
 	}
         
-        public static function getList($Connection,$Object,$ConditionArray,$SubObject = null)
+        public static function getList($connection,$Object,$ConditionArray,$SubObject = null)
         {
             $Return = Array();
             
@@ -175,9 +175,9 @@ class Common
                 }
             }
             else
-            {
-                $Result=$Connection->sql_query(Common::getSelectQuery($SubObject,$ConditionArray));
-                while($row = $Connection->sql_fetch_object($Result,"MyORM\\".$SubObject))
+            {            
+                $Result=$connection->sql_query(Common::getSelectQuery($SubObject,$ConditionArray));
+                while($row = $connection->sql_fetch_object($Result,"MyORM\\".$SubObject))
                 {
                     $Return[] = $row;
                 }
@@ -389,5 +389,41 @@ class Common
                     }
                 }
             }    
+        }
+        
+        public static function query($connection,$sql) {
+            if (EnableAPIMyORM == 1 && APIServer == 0)
+            {
+                //Appel de l'API
+                $Return = Common::callAPI("GET",APIServerURL."/DirectQueryToDataBase/","{\"sql\":\"".$sql."\"");
+                $Return = json_decode($return);
+            }
+            else
+            {
+                $Result=$connection->sql_query($sql);
+                while($row = $connection->sql_fetch_object($Result))
+                {
+                    $Return[] = $row;
+                }
+            }
+            return $Return;
+        }
+        
+        public static function queryToObject($connection,$sql,$object) {
+            if (EnableAPIMyORM == 1 && APIServer == 0)
+            {
+                //Appel de l'API
+                $Return = Common::callAPI("GET",APIServerURL."/DirectQueryToDataBase/","{\"sql\":\"".$sql."\"");
+                $Return = json_decode($return);
+            }
+            else
+            {
+                $Result=$connection->sql_query($sql);
+                while($row = $connection->sql_fetch_object($Result,"MyORM\\".$object))
+                {
+                    $Return[] = $row;
+                }
+            }
+            return $Return;
         }
 }

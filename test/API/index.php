@@ -48,6 +48,11 @@ else {
     $ClassName =  "MyORM\\".$_GET["Object"];
     switch ($INPUT_TYPE) {
         case 'GET':
+            if (($_GET["Object"] == "DirectQueryToDataBase")&&(isset($call->sql))) {
+                header('Content-Type: application/json; charset=utf-8');
+                echo MyORM\Common::get_toJson(MyORM\Common::query($connection,$call->sql));
+                die();
+            }
             if (isset($_GET["Id"]))
             {
                 if ($_GET["Id"] == "Ineedtheclassplease")
@@ -61,6 +66,12 @@ else {
                 }
                 else
                 {
+                    if (isset($_GET["Variable"]) && $_GET["Variable"] == "ForcedObjectFromID")
+                    {
+                        $_GET["Property"] = $_GET["Variable"];
+                        unset($_GET["Variable"]);
+                    }
+                    
                     if (isset($_GET["Property"]))
                     {
                         $Return = new $ClassName($_GET["Id"],$_GET["Property"]);
@@ -80,7 +91,8 @@ else {
                     
                     if (is_object($Return)) {
                         header('Content-Type: application/json; charset=utf-8');
-                        echo $Return->toJson("this");
+                        if ( ($Return->IsNew != 1) || ($_GET["Property"] == "ForcedObjectFromID") )
+                            echo $Return->toJson("this");
                     }
                     else {
                         if (is_array($Return)) {
