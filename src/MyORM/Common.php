@@ -321,28 +321,28 @@ class Common
         
         public static function callAPI($Mode,$Route,$Json = "")
         {
-                // Création d'un flux
-                $opts = array(
-                  'http'=>array(
-                    'method'=>"$Mode",
-                    'header'=>"Accept-language: en\r\n" .
-                              "Content-Length: ".strlen($Json)."\r\n".
-                              "content-type:application/json\r\n".
-                              "APIAUTHENTIFICATION:".PublicKey."\r\n",
-                    'content'=>$Json
-                  )
-                );
-                $context = stream_context_create($opts);
+            // Création d'un flux
+            $opts = array(
+              'http'=>array(
+                'method'=>"$Mode",
+                'header'=>"Accept-language: en\r\n" .
+                          "Content-Length: ".strlen($Json)."\r\n".
+                          "content-type:application/json\r\n".
+                          "APIAUTHENTIFICATION:".PublicKey."\r\n",
+                'content'=>$Json
+              )
+            );
+            $context = stream_context_create($opts);
 
-                try {
-                    ob_start();
-                    $return = @file_get_contents($Route, false, $context);
-                    ob_get_clean();
-                }
-                catch (Exception $e) {
-                    die("recuperation error API Server");
-                }
-                return $return;
+            try {
+                ob_start();
+                $return = @file_get_contents($Route, false, $context);
+                ob_get_clean();
+            }
+            catch (Exception $e) {
+                die("recuperation error API Server");
+            }
+            return $return;
         }
         
         public static function makePropertiesArray($Properties) {
@@ -392,11 +392,12 @@ class Common
         }
         
         public static function query($connection,$sql) {
+            $Return = array();
             if (EnableAPIMyORM == 1 && APIServer == 0)
             {
                 //Appel de l'API
-                $Return = Common::callAPI("GET",APIServerURL."/DirectQueryToDataBase/","{\"sql\":\"".$sql."\"");
-                $Return = json_decode($return);
+                $Return = Common::callAPI("GET",APIServerURL."/DirectQueryToDataBase/","{\"sql\":\"".$sql."\"}");
+                $Return = json_decode($Return);
             }
             else
             {
@@ -406,15 +407,25 @@ class Common
                     $Return[] = $row;
                 }
             }
-            return $Return;
+            if (is_array($Return) && count($Return)>0) {
+                return $Return;
+            }
         }
         
         public static function queryToObject($connection,$sql,$object) {
+            $Return = array();
             if (EnableAPIMyORM == 1 && APIServer == 0)
             {
                 //Appel de l'API
-                $Return = Common::callAPI("GET",APIServerURL."/DirectQueryToDataBase/","{\"sql\":\"".$sql."\"");
-                $Return = json_decode($return);
+                $Return = Common::callAPI("GET",APIServerURL."/DirectQueryToDataBase/","{\"sql\":\"".$sql."\"}");
+                $Return = json_decode($Return);
+                
+                $classname = "MyORM\\".$object;
+                if (is_array($Return)) {
+                    foreach ($Return as $key => $value) {
+                        $Return[$key] = new $classname($value,"reloadObjectFromJsonDecodeObject");
+                    }
+                }
             }
             else
             {
@@ -424,6 +435,8 @@ class Common
                     $Return[] = $row;
                 }
             }
-            return $Return;
+            if (is_array($Return) && count($Return)>0) {
+                return $Return;
+            }
         }
 }
