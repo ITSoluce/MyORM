@@ -3,8 +3,6 @@
 echo "<pre>require_once __DIR__ . '/../vendor/autoload.php'; // Autoload files using Composer autoload
 require_once __DIR__ . '/../MyConfig/autoload.php'; // Autoload files using MyConfig autoload
 
-//loading la gestion des exceptions
-new MyException\MyException();
 //loading de l'ORM
 new MyORM\MyORM();
 
@@ -13,8 +11,6 @@ $"."connection = new MySQL\sql(MySQLServer,MySQLUser,MySQLPassword,MySQLDatabase
 require_once __DIR__ . '/../vendor/autoload.php'; // Autoload files using Composer autoload
 require_once __DIR__ . '/../MyConfig/autoload.php'; // Autoload files using MyConfig autoload
 
-//loading la gestion des exceptions
-new MyException\MyException();
 //loading de l'ORM
 new MyORM\MyORM();
 

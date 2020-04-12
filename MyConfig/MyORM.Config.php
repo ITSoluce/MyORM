@@ -7,9 +7,9 @@
  */
 
 // Business Logic Layer Directory
-$MyORMBLL = "../BLL/";
+$MyORMBLL = "BLL/";
 // Data access layer Directory, automatic oriented object relational mapping cache (u must delete file if u make some database change)
-$MyORMDAL = "../DAL/";
+$MyORMDAL = "DAL/";
 
 //SQL connect for select
 $MyORMSQL = "connection";

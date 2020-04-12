@@ -4,6 +4,9 @@ namespace MyORM;
 
 class MyORM {
 	function __construct() {
+            // Changement des exceptions.
+            new \MyException\MyException();
+
             if (version_compare(phpversion(), '5.3.0', '>=')) {
                 spl_autoload_register(array(__CLASS__, 'autoload'), true, FALSE);
             } else {
@@ -21,9 +24,9 @@ class MyORM {
                 {
                     require __DIR__.'/../../'. MyORMBLL . "$classname.php";
                 }
-                elseif(file_exists(__DIR__.'/../../'. MyORMDAL . $classname . "_v". MyORMFileVersion .".php")) /* File exists dans le dossier DAL ? */
+                elseif(file_exists(__DIR__.'/../../'. MyORMDAL . $classname .".php")) /* File exists dans le dossier DAL ? */
                 {
-                    require __DIR__.'/../../'. MyORMDAL . $classname . "_v". MyORMFileVersion .".php";
+                    require __DIR__.'/../../'. MyORMDAL . $classname .".php";
                 }
                 else
                 {
@@ -54,8 +57,8 @@ class MyORM {
                             }
                             else {
                                 $ORM = new MyORM();
-                                if($ORM->saveclasstofile($classname ."_v" . MyORMFileVersion .".php", $content, __DIR__.'/../../'. MyORMDAL)) {
-                                        require(__DIR__.'/../../'. MyORMDAL . $classname ."_v". MyORMFileVersion .".php");
+                                if($ORM->saveclasstofile($classname.".php", $content, __DIR__.'/../../'. MyORMDAL)) {
+                                        require(__DIR__.'/../../'. MyORMDAL . $classname .".php");
                                 }
                             }
                         }
@@ -79,8 +82,8 @@ class MyORM {
                                 eval($content);
                             }
                             else {
-                                if($ORM->saveclasstofile($classname ."_v" . MyORMFileVersion .".php", $content, __DIR__.'/../../'. MyORMDAL)) {
-                                    require(__DIR__.'/../../'. MyORMDAL . $classname ."_v". MyORMFileVersion .".php");
+                                if($ORM->saveclasstofile($classname.".php", $content, __DIR__.'/../../'. MyORMDAL)) {
+                                    require(__DIR__.'/../../'. MyORMDAL . $classname .".php");
                                 }
                             }
                         }
