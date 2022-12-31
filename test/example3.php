@@ -174,21 +174,24 @@ About the notice bug ... =>
 ";
 
 echo "
-@$"."orderclone->OrderLine_Order[2]->Quantity = 5; //mask notice bug PHP
-$"."orderclone->OrderLine_Order[2]->set_Quantity(5); //bypass notice bug using set
-@$"."orderclone->Orderline_Order[2]->Parent_Reference=new ORM\\reference($"."ID_Ref2); //mask notice bug PHP
-$"."orderclone->OrderLine_Order[2]->set_Parent_Reference(new ORM\\reference($"."ID_Ref2)); //bypass notice bug using set
-
-$"."orderclone->Save(); //save only modified datas
-
+$"."orderclone->OrderLine_Order[2]->Quantity = 5; //mask notice bug PHP
 ";
-
 $orderclone->OrderLine_Order[2]->Quantity = 5; // notice bug PHP
 $orderclone->OrderLine_Order[2]->set_Quantity(5); //bypass notice bug
+echo "
+$"."orderclone->OrderLine_Order[2]->set_Quantity(5); //bypass notice bug using set
+@$"."orderclone->Orderline_Order[2]->Parent_Reference=new ORM\\reference($"."ID_Ref2); //mask notice bug PHP
+";
 $orderclone->Orderline_Order[2]->Parent_Reference=new MyORM\reference($ID_Ref2); // notice bug PHP
 $orderclone->OrderLine_Order[2]->set_Parent_Reference(new MyORM\reference($ID_Ref2)); //bypass notice bug using set
 
 $orderclone->Save(); //save only modified datas
+
+echo "$"."orderclone->OrderLine_Order[2]->set_Parent_Reference(new ORM\\reference($"."ID_Ref2)); //bypass notice bug using set
+
+$"."orderclone->Save(); //save only modified datas
+
+";
 
 echo "</pre>";
 echo "<p><font color=red>Powerfull ?</font></p>";

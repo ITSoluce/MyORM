@@ -34,9 +34,7 @@ $reference->save();
 echo "$"."reference2 = clone $"."reference;
 $"."reference2->Price=9.99;
 $"."reference2->Code=\"Ref002\";
-echo $"."reference2->save(); // will echo the inserted ID</p>
-
-";
+echo $"."reference2->save(); // will echo the inserted ID</p>";
 
 $reference2 = clone $reference;
 $reference2->Price=9.99;
