@@ -535,14 +535,25 @@ $c .= "
     // Specific get & set method for this class
     // **********************
 
-    public function get_isNew()
-    {
-            return intval(\$this->isNew);
+    /*
+    * @return int
+    */
+    public function get_isNew() {
+        return intval(\$this->isNew);
     }
 
-    public function get_structure()
-    {
-            return \$this->structure;		
+    /*
+    * @return int
+    */
+    public function get_isToSaveOrToUpdate () {
+        return intval(\$this->isToSaveOrToUpdate );
+    }
+
+    /*
+    * @return array
+    */
+    public function get_structure() {
+        return \$this->structure;
     }
 	
     ";
