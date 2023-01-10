@@ -6,7 +6,7 @@ require_once __DIR__ . '/../MyConfig/autoload.php'; // Autoload files using MyCo
 //loading de l'ORM
 new MyORM\MyORM();
 
-$"."connection = new MySQL\sql(MySQLServer,MySQLUser,MySQLPassword,MySQLDatabase,MySQLPort);";
+$"."SQL = new MySQL\sql(MySQLServer,MySQLUser,MySQLPassword,MySQLDatabase,MySQLPort);";
 
 require_once __DIR__ . '/../vendor/autoload.php'; // Autoload files using Composer autoload
 require_once __DIR__ . '/../MyConfig/autoload.php'; // Autoload files using MyConfig autoload
@@ -14,7 +14,7 @@ require_once __DIR__ . '/../MyConfig/autoload.php'; // Autoload files using MyCo
 //loading de l'ORM
 new MyORM\MyORM();
 
-$connection = new MySQL\sql(MySQLServer,MySQLUser,MySQLPassword,MySQLDatabase,MySQLPort);
+$SQL = new MySQL\sql(MySQLServer,MySQLUser,MySQLPassword,MySQLDatabase,MySQLPort);
 
 echo "Init some datas into database for the demo
 $"."reference = new MyORM\\reference();
@@ -67,7 +67,7 @@ $customer2 = new MyORM\customer($customer->ID_Customer); //reload customer
 $customer2->LastName="Thibault";
 echo $customer2->save(); // will echo the ID
 
-$connection->sql_close();
+$SQL->sql_close();
 echo "
 
-$"."connection->sql_close();</pre>";
+$"."SQL->sql_close();</pre>";

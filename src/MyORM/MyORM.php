@@ -432,10 +432,10 @@ $c .= "
                     }
                 }
                 else {
-                    \$query = \$connection->sql_query(parent::getSelectQuery(\"".$class."\",array(array (\"\",\$property,\"Equal\",parent::quote(\$this->structure[\$property],\$val))),\"1\"));
+                    \$result = ORMBase::query(parent::getSelectQuery(\"".$class."\",array(array (\"\",\$property,\"Equal\",parent::quote(\$this->structure[\$property],\$val))),\"1\"));
 
-                    if(\$connection->sql_num_rows(\$query) != 0) {
-                        \$row = \$connection->sql_fetch_object(\$query);
+                    if(count(\$result) != 0) {
+                        \$row = \$result[0];
                     }
                     else {
                         \$this->isNew=1;
