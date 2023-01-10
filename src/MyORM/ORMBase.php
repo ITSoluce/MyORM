@@ -436,95 +436,119 @@ class ORMBase
 	}
 	
 	public static function queryNoReturn($sql, $write = null) {
-		try {
+		if (is_null($write)) {
 			global ${MyORMSQL};
-			global ${MyORMSQL2};
-			
-			if (is_null($write)) {
+			try {
 				$Result=${MyORMSQL}->sql_query($sql);
+				if ($Result === FALSE) {
+					throw new \Exception('Requête non executée : '.$sql.' ('.${MyORMSQL}->errorInfo()[2].')');
+				}
 			}
-			else {
-				$Result=${MyORMSQL2}->sql_query($sql);
-			}
-			if ($Result === FALSE) {
-				throw new \Exception('Requête non executée : '.$sql.' ('.DB::getPdo()->errorInfo()[2].')');
+			catch (\Exception $e) {
+				throw new \Exception('Requête non executée : '.$sql.' ('.${MyORMSQL}->errorInfo()[2].')');
 			}
 		}
-		catch (\Exception $e) {
-			throw new \Exception('Requête non executée : '.$sql.' ('.DB::getPdo()->errorInfo()[2].')');
+		else {
+			global ${MyORMSQL2};
+			try {
+				$Result=${MyORMSQL2}->sql_query($sql);
+				if ($Result === FALSE) {
+					throw new \Exception('Requête non executée : '.$sql.' ('.${MyORMSQL}->errorInfo()[2].')');
+				}
+			}
+			catch (\Exception $e) {
+				throw new \Exception('Requête non executée : '.$sql.' ('.${MyORMSQL2}->errorInfo()[2].')');
+			}
 		}
 		return $Result;
 	}
 	
 	public static function lastInsertId() {
-		try {
-			global ${MyORMSQL};
-			global ${MyORMSQL2};
-			
-			if (${MyORMSQL} === ${MyORMSQL2}) {
+		global ${MyORMSQL};
+		global ${MyORMSQL2};
+		
+		if (${MyORMSQL} === ${MyORMSQL2}) {
+			try {
 				$Result=${MyORMSQL}->lastInsertId();
 			}
-			else {
+			catch (\Exception $e) {
+				throw new \Exception('Requête non executée : '.$sql.' ('.${MyORMSQL}->errorInfo()[2].')');
+			}
+		}
+		else {
+							try {
 				$Result=${MyORMSQL2}->lastInsertId();
 			}
-				}
-		catch (\Exception $e) {
-			throw new \Exception('Requête non executée : '.$sql.' ('.DB::getPdo()->errorInfo()[2].')');
+			catch (\Exception $e) {
+				throw new \Exception('Requête non executée : '.$sql.' ('.${MyORMSQL2}->errorInfo()[2].')');
+			}
 		}
 		return $Result;
 	}
 	
-		public static function beginTransaction() {
-		try {
-			global ${MyORMSQL};
-			global ${MyORMSQL2};
-			
-			if (${MyORMSQL} === ${MyORMSQL2}) {
+	public static function beginTransaction() {
+		global ${MyORMSQL};
+		global ${MyORMSQL2};
+		
+		if (${MyORMSQL} === ${MyORMSQL2}) {
+			try {
 				$Result=${MyORMSQL}->beginTransaction();
 			}
-			else {
+			catch (\Exception $e) {
+				throw new \Exception('Requête non executée : '.$sql.' ('.${MyORMSQL}->errorInfo()[2].')');
+			}
+		}
+		else {
+							try {
 				$Result=${MyORMSQL2}->beginTransaction();
 			}
-				}
-		catch (\Exception $e) {
-			throw new \Exception('Requête non executée : '.$sql.' ('.DB::getPdo()->errorInfo()[2].')');
+			catch (\Exception $e) {
+				throw new \Exception('Requête non executée : '.$sql.' ('.${MyORMSQL2}->errorInfo()[2].')');
+			}
 		}
-		return $Result;
 	}
 	
-		public static function commit() {
-		try {
-			global ${MyORMSQL};
-			global ${MyORMSQL2};
-			
-			if (${MyORMSQL} === ${MyORMSQL2}) {
+	public static function commit() {
+		global ${MyORMSQL};
+		global ${MyORMSQL2};
+		
+		if (${MyORMSQL} === ${MyORMSQL2}) {
+			try {
 				$Result=${MyORMSQL}->commit();
 			}
-			else {
+			catch (\Exception $e) {
+				throw new \Exception('Requête non executée : '.$sql.' ('.${MyORMSQL}->errorInfo()[2].')');
+			}
+		}
+		else {
+							try {
 				$Result=${MyORMSQL2}->commit();
 			}
-				}
-		catch (\Exception $e) {
-			throw new \Exception('Requête non executée : '.$sql.' ('.DB::getPdo()->errorInfo()[2].')');
+			catch (\Exception $e) {
+				throw new \Exception('Requête non executée : '.$sql.' ('.${MyORMSQL2}->errorInfo()[2].')');
+			}
 		}
-		return $Result;
 	}
-	
-		public static function rollBack() {
-		try {
-			global ${MyORMSQL};
-			global ${MyORMSQL2};
-			
-			if (${MyORMSQL} === ${MyORMSQL2}) {
+
+	public static function rollBack() {
+		global ${MyORMSQL};
+		global ${MyORMSQL2};
+		
+		if (${MyORMSQL} === ${MyORMSQL2}) {
+			try {
 				$Result=${MyORMSQL}->rollBack();
 			}
-			else {
+			catch (\Exception $e) {
+				throw new \Exception('Requête non executée : '.$sql.' ('.${MyORMSQL}->errorInfo()[2].')');
+			}
+		}
+		else {
+							try {
 				$Result=${MyORMSQL2}->rollBack();
 			}
-				}
-		catch (\Exception $e) {
-			throw new \Exception('Requête non executée : '.$sql.' ('.DB::getPdo()->errorInfo()[2].')');
+			catch (\Exception $e) {
+				throw new \Exception('Requête non executée : '.$sql.' ('.${MyORMSQL2}->errorInfo()[2].')');
+			}
 		}
-		return $Result;
 	}
 }
