@@ -73,7 +73,7 @@ class ORMBase
 					$values .= "null, ";
 				else
 				{
-					if (((is_null($field[4]))||($field[4]==''))&&(($field[1]=='tinyint')||($field[1]=='smallint')||($field[1]=='mediumint')||($field[1]=='int')||($field[1]=='decimal')||($field[1]=='float')||($field[1]=='double')||($field[1]=='bit')||($field[1]=='bool')||($field[1]=='serial')))
+					if (((is_null($field[4]))||($field[4]==''))&&(($field[1]=='tinyint')||($field[1]=='smallint')||($field[1]=='mediumint')||($field[1]=='int')||($field[1]=='bigint')||($field[1]=='decimal')||($field[1]=='float')||($field[1]=='double')||($field[1]=='bit')||($field[1]=='bool')||($field[1]=='serial')))
 						$field[4]=0;
 					if (($field[1]!='timestamp')&&($field[1]!='date')&&($field[1]!='datetime')&&($field[1]!='char')&&($field[1]!='varchar')&&($field[1]!='tinyblob')&&($field[1]!='tinytext')&&($field[1]!='blob')&&($field[1]!='text')&&($field[1]!='mediumblob')&&($field[1]!='mediumtext')&&($field[1]!='longblob')&&($field[1]!='longtext')&&($field[1]!='time')&&($field[1]!='enum'))
 						$values .= $field[4].", ";
@@ -111,7 +111,7 @@ class ORMBase
 					}
 					else
 					{
-						if (((is_null($field[4]))||($field[4]==''))&&(($field[1]=='tinyint')||($field[1]=='smallint')||($field[1]=='mediumint')||($field[1]=='int')||($field[1]=='decimal')||($field[1]=='float')||($field[1]=='double')||($field[1]=='bit')||($field[1]=='bool')||($field[1]=='serial')))
+						if (((is_null($field[4]))||($field[4]==''))&&(($field[1]=='tinyint')||($field[1]=='smallint')||($field[1]=='mediumint')||($field[1]=='int')||($field[1]=='bigint')||($field[1]=='decimal')||($field[1]=='float')||($field[1]=='double')||($field[1]=='bit')||($field[1]=='bool')||($field[1]=='serial')))
 							$field[4]=0;
 						if (($field[1]!='timestamp')&&($field[1]!='date')&&($field[1]!='datetime')&&($field[1]!='char')&&($field[1]!='varchar')&&($field[1]!='tinyblob')&&($field[1]!='tinytext')&&($field[1]!='blob')&&($field[1]!='text')&&($field[1]!='mediumblob')&&($field[1]!='mediumtext')&&($field[1]!='longblob')&&($field[1]!='longtext')&&($field[1]!='time')&&($field[1]!='enum'))
 							$fieldsup.= "`$field[0]` = ".$field[4].", ";
