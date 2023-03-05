@@ -471,11 +471,6 @@ $c .= "
                 }
             }
         }
-        else
-        {   
-            \$this->isNew=1;
-            \$this->isToSaveOrToUpdate=1;
-        }
     }
     ";
 
