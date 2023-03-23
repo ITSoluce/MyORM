@@ -534,6 +534,9 @@ $c .= "
     * @return int
     */
     public function get_isNew() {
+		if (empty(\$this->{self::primary_key})) {
+            \$this->isNew = 1;
+        }
         return intval(\$this->isNew);
     }
 
