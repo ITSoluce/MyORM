@@ -609,7 +609,7 @@ $c .= "
         }
 
         if (!is_null(\$this->".$varname.")) {
-            \$this->get_".ucfirst($varname)."(1);
+            \$this->get_".ucfirst($varname)."(\$this->$col);
         }";
 
                 }
