@@ -609,7 +609,7 @@ $c .= "
         }
 
         if (!is_null(\$this->".$varname.")) {
-            \$this->get_".ucfirst($varname)."(\$this->$col);
+            \$this->get_".ucfirst($varname)."(1);
         }";
 
                 }
@@ -655,8 +655,8 @@ $c .= "
     $c.= "/*
     * @return ".$childobject."
     */
-    public function get_Parent".ucfirst($varname)."(\$forced = 0) {
-        if (is_null(\$this->Parent".$varname.")) {
+    public function get_Parent".ucfirst($varname)."(\$forced = null) {
+        if ( is_null(\$this->Parent".$varname.") || !empty(\$forced) ) {
             \$this->Parent".$varname." = new ".$childobject."(\$this->".$childcolumn.");
         }
 
