@@ -7,7 +7,7 @@ new MyException\\MyException();
 //loading de l'ORM
 new MyORM\\MyORM();
 
-$"."connection = new MySQL\sql(MySQLServer,MySQLUser,MySQLPassword,MySQLDatabase,MySQLPort);";
+$"."SQL = new MySQL\sql(MySQLServer,MySQLUser,MySQLPassword,MySQLDatabase,MySQLPort);";
 
 require_once __DIR__ . '/../vendor/autoload.php'; // Autoload files using Composer autoload
 require_once __DIR__ . '/../MyConfig/autoload.php'; // Autoload files using MyConfig autoload
@@ -17,7 +17,7 @@ new MyException\MyException();
 //loading de l'ORM
 new MyORM\MyORM();
 
-$connection = new MySQL\sql(MySQLServer,MySQLUser,MySQLPassword,MySQLDatabase,MySQLPort);
+$SQL = new MySQL\sql(MySQLServer,MySQLUser,MySQLPassword,MySQLDatabase,MySQLPort);
 
 class myorder extends MyORM\order
 {
@@ -196,4 +196,4 @@ $"."orderclone->Save(); //save only modified datas
 echo "</pre>";
 echo "<p><font color=red>Powerfull ?</font></p>";
 
-$connection->sql_close();
+$SQL->sql_close();

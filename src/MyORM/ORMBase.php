@@ -64,7 +64,7 @@ class ORMBase
 				if ( ( $test[0] == "varchar" ) && ( isset( $test[1] ) ) )
 				{
 					$field[1] = "varchar";
-					$field[4] = substr($field[4],0,$test[1]);
+					$field[4] = substr($field[4] ?? '',0,$test[1]);
 				}
 				
 				$fields.= "`$field[0]` ,";

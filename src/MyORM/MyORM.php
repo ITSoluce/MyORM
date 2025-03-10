@@ -169,7 +169,7 @@ class MyORM {
 			$class = $tablename;
 		}
 		$keychar="";
-		$thisvarinparent ="";
+		$thisvarinparent = array();
 		$key = "";
 		$childobject  ="";
 		
@@ -568,7 +568,12 @@ $c .= "
     */
 	public function get_".$col."()
     {
-        return stripslashes(\$this->".$col.");
+		if (!empty(\$this->".$col.")) {
+			return stripslashes(\$this->".$col.");
+		}
+		else {
+			return \$this->".$col.";
+		}
     }
 
     ";
@@ -656,7 +661,7 @@ $c .= "
     * @return ".$childobject."
     */
     public function get_Parent".ucfirst($varname)."(\$forced = null) {
-        if ( is_null(\$this->Parent".$varname.") || !empty(\$forced) ) {
+        if ( ( is_null(\$this->Parent".$varname.") || !empty(\$forced) ) && (!empty(\$this->".$childcolumn.") ) ) {
             \$this->Parent".$varname." = new ".$childobject."(\$this->".$childcolumn.");
         }
 
@@ -1076,6 +1081,20 @@ $c.="
         }
     }
 	
+	public function duplicate() {
+        \$this->$key = null;
+        \$this->structure['$key'][4] = \"\";
+        \$this->isNew = 1;
+        \$this->isToSaveOrToUpdate = 1;
+        foreach (\$this->structure as \$field) {
+            if (\$field[1] != 'ParentObject') {
+                \$this->structure[\$field[0]][3] = 1;
+            }
+        }
+
+        return \$this;
+    }
+	
     public function LoadAllParents()
     {
         ";
@@ -1130,7 +1149,7 @@ $c .= "
 	$c.="
     }
 
-    public function jsonSerialize() {
+    public function jsonSerialize():mixed {
         //\$this->LoadAllChilds();
         \$return =  array();
         foreach (array_keys(\$this->structure) AS \$Key){
