@@ -44,7 +44,7 @@ class ORMBase
 				{
 					$fields.= "`$field[0]` ,";
 				}
-			$fields = substr($fields ?? '',0,strlen($fields)-2);
+			$fields = substr($fields,0,strlen($fields)-2);
 
 			if ($KeyValue=="") {
 				return false;
@@ -81,8 +81,8 @@ class ORMBase
 						$values .= "'".addslashes((string)$field[4] ?? '')."', ";
 				}
 			}
-			$fields = substr($fields ?? '',0,strlen($fields)-2);
-			$values = substr($values ?? '',0,strlen($values)-2);
+			$fields = substr($fields,0,strlen($fields)-2);
+			$values = substr($values,0,strlen($values)-2);
 
 			if ($fields=="") {
 				return false;
@@ -120,7 +120,7 @@ class ORMBase
 					}
 				}
 			}
-			$fieldsup = substr($fieldsup ?? '',0,strlen($fieldsup)-2);
+			$fieldsup = substr($fieldsup,0,strlen($fieldsup)-2);
 
 			if (($fieldsup=="")||($KeyValue=="")) {
 				return false;
@@ -152,8 +152,10 @@ class ORMBase
 		
 		if (($field[1]!='timestamp')&&($field[1]!='date')&&($field[1]!='datetime')&&($field[1]!='char')&&($field[1]!='varchar')&&($field[1]!='tinyblob')&&($field[1]!='tinytext')&&($field[1]!='blob')&&($field[1]!='text')&&($field[1]!='mediumblob')&&($field[1]!='mediumtext')&&($field[1]!='longblob')&&($field[1]!='longtext')&&($field[1]!='time')&&($field[1]!='enum'))
 			return $val;
-		else
-			return "'".addslashes((string)$val ?? '')."'";
+		else {
+			if (is_null($val)) { return null; }
+			else { return "'".addslashes((string)$val)."'"; }
+		}
 	}
 	
 	function formater($field,$val)
@@ -168,7 +170,8 @@ class ORMBase
 		if (($field[1]!='timestamp')&&($field[1]!='date')&&($field[1]!='datetime')&&($field[1]!='char')&&($field[1]!='varchar')&&($field[1]!='tinyblob')&&($field[1]!='tinytext')&&($field[1]!='blob')&&($field[1]!='text')&&($field[1]!='mediumblob')&&($field[1]!='mediumtext')&&($field[1]!='longblob')&&($field[1]!='longtext')&&($field[1]!='time')&&($field[1]!='enum'))
 			return $val;
 		else
-			return stripslashes($val ?? '');
+			if (is_null($val)) { return null; }
+			else { return stripslashes($val); }
 	}
 
 	public static function getTypeFromDatabaseType($sqlType) {
